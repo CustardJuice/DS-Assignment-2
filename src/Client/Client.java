@@ -1,6 +1,9 @@
 package Client;
 
 import java.net.*;
+
+import AggregationServer.AggregationServer;
+
 import java.io.*;
 
 public class Client {
@@ -24,5 +27,15 @@ public class Client {
     in.close();
     out.close();
     client_socket.close();
+  }
+
+   public static void main(String[] args) {
+    /* Create new client object */
+    Client client = new Client();
+
+    /* Read server address and port number from command line */
+    String address = args[0];
+    int port = Integer.parseInt(args[1]);
+    
   }
 }
