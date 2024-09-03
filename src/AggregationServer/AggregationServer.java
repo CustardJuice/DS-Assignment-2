@@ -8,8 +8,13 @@ public class AggregationServer {
 
   public static void main(String[] args) {
     AggregationServer server = new AggregationServer();
+    int port = 4567;
+    if (args.length > 0) {
+      port = Integer.parseInt(args[0]);
+    }
+
     try {
-      server.start(6666);
+      server.start(port);
     } catch (IOException e) {
       System.err.println("Problem starting server");
       e.printStackTrace();
@@ -43,16 +48,14 @@ public class AggregationServer {
 
         String input_line;
         while ((input_line = in.readLine()) != null) {
-          if (".".equals(input_line)) {
-            out.println("bye");
-            break;
-          }
-          out.println(input_line);
+          /* echo */
+          out.println("echo: " + input_line);
         }
 
         in.close();
         out.close();
         client_socket.close();
+
       } catch (IOException e) {
         System.err.println("Server Client Handler Error");
         e.printStackTrace();

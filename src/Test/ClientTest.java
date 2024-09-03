@@ -7,12 +7,12 @@ import java.net.UnknownHostException;
 
 import org.junit.Test;
 
-import Client.Client;
+import Client.GETClient;
 
 public class ClientTest {
   @Test
   public void SimpleServerEcho1() throws UnknownHostException, IOException {
-    Client client1 = new Client();
+    GETClient client1 = new GETClient();
     client1.startConnection("127.0.0.1", 6666);
     String msg1 = client1.sendMessage("hello");
     String msg2 = client1.sendMessage("world");
@@ -25,7 +25,7 @@ public class ClientTest {
 
   @Test
   public void SimpleServerEcho2() throws UnknownHostException, IOException {
-    Client client2 = new Client();
+    GETClient client2 = new GETClient();
     client2.startConnection("127.0.0.1", 6666);
     String msg1 = client2.sendMessage("hello");
     String msg2 = client2.sendMessage("world");

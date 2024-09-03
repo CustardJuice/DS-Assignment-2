@@ -1,18 +1,19 @@
-# Define the Java files
-CLIENT_DIR = src/Client
-AGSERVER_DIR = src/AggregationServer
-COSERVER_DIR = src/ContentServer
-AGSERVER_JAVA = $(AGSERVER_DIR)/AggregationServer.java
-COSERVER_JAVA = $(COSERVER_DIR)/ContentServer.java
-CLIENT_JAVA = $(CLIENT_DIR)/Client.java
+# Defome the directories
+CLIENT_DIR = Client
+AGSERVER_DIR = AggregationServer
+COSERVER_DIR = ContentServer
+SRC_DIR = src
+BIN_DIR = bin
 
 # Define the class names
 AGSERVER_CLASS = AggregationServer
 COSERVER_CLASS = ContentServer
-CLIENT_CLASS = Client
+CLIENT_CLASS = GETClient
 
-# Define the terminal command
-TERMINAL_CMD = gnome-terminal -- bash -c
+# Define the Java files
+AGSERVER_JAVA = $(SRC_DIR)/$(AGSERVER_DIR)/$(AGSERVER_CLASS).java
+COSERVER_JAVA = $(SRC_DIR)/$(COSERVER_DIR)/$(COSERVER_CLASS).java
+CLIENT_JAVA = $(SRC_DIR)/$(CLIENT_DIR)/$(CLIENT_CLASS).java
 
 # Default target
 all: run
@@ -23,11 +24,19 @@ compile:
 
 # Target to run both server and client
 run: compile
-	$(TERMINAL_CMD) "java $(AGSERVER_CLASS); exec bash" \
-	--tab --title "Server" \
-	$(TERMINAL_CMD) "java $(CLIENT_CLASS); exec bash" \
-	--tab --title "Client"
+	@tmux new-session -d my_session 'make run_server'
+	@tmux split-window -h -t my_session 'make run_client'
+	@tmux attach -t my_session
+	
+# Run server
+run_server:
+	cd $(BIN_DIR) && java $(AGSERVER_DIR)/$(AGSERVER_CLASS)
+
+# Run client
+run_client:
+	cd $(BIN_DIR) && java $(CLIENT_DIR)/$(CLIENT_CLASS)
+
 
 # Clean target to remove compiled .class files
 clean:
-	rm -f *.class
+	rm -f $(BIN_DIR)/*.class
