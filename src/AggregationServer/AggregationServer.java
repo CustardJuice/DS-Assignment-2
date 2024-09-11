@@ -31,6 +31,14 @@ public class AggregationServer {
     server_socket.close();
   }
 
+  public void handlePUT(String msg) {
+    
+  }
+
+  public void handleGET(String msg) {
+    
+  }
+
   private static class ClientHandler extends Thread {
     private Socket client_socket;
     private PrintWriter out;
@@ -42,15 +50,27 @@ public class AggregationServer {
 
     public void run() {
       try {
+        /* Initialise Reader */
         out = new PrintWriter(client_socket.getOutputStream(), true);
         in = new BufferedReader(
             new InputStreamReader(client_socket.getInputStream()));
 
-        String input_line;
+        /* Recieve message header */
+        String input_line = in.readLine();
+        if (input_line.startsWith("PUT")) {
+          
+        } else if (input_line.startsWith("GET")) {
+          
+        } else {
+          System.err.println("Message was not GET or PUT");
+        }
+
+
         while ((input_line = in.readLine()) != null) {
           /* echo */
           out.println("echo: " + input_line);
         }
+        out.println(".");
 
         in.close();
         out.close();

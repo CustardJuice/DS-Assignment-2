@@ -2,30 +2,55 @@ package Client;
 
 import java.net.*;
 import java.io.*;
+import org.json.simple.*;
 
 public class ContentServer extends Client {
   public FileReader reader;
   public BufferedReader buff_read;
+  public JSONObject json;
 
   /* METHODS */
-  public String fileToString(String file_path) throws IOException {
-    String msg = "";
+  // public String fileToString(String file_path) throws IOException {
+  // String data = "";
 
-    /* newline for the end of every line */
-    String newline = "\r\n";
+  // /* newline for the end of every line */
+  // String newline = "\r\n";
 
-    /* initialise BufferedReader */
-    reader = new FileReader(file_path);
-    buff_read = new BufferedReader(reader);
+  // /* initialise BufferedReader */
+  // reader = new FileReader(file_path);
+  // buff_read = new BufferedReader(reader);
 
-    /* read line-by-line */
-    String line;
-    while ((line = buff_read.readLine()) != null) {
-      msg += line;
-      msg += newline;
+  // /* read line-by-line */
+  // String line;
+  // while ((line = buff_read.readLine()) != null) {
+  // data += line;
+  // data += newline;
+  // }
+
+  // return data;
+  // }
+
+  /* Given path to file, parse file contents and populate local json */
+  @SuppressWarnings("unchecked")
+  public void makeJSONFromFile(String file) {
+    try {
+      /* initialise BufferedReader */
+      reader = new FileReader(file);
+      buff_read = new BufferedReader(reader);
+
+      /* read line-by-line */
+      String line;
+      while ((line = buff_read.readLine()) != null) {
+        int tok = line.indexOf(':');
+        String key = line.substring(0, tok);
+        String value = line.substring(tok + 1);
+        json.put(key, value);
+      }
+
+    } catch (IOException e) {
+      System.err.println("Problem parsing ContentServer file");
+      e.printStackTrace();
     }
-
-    return msg;
   }
 
   public static void main(String[] args) {
@@ -47,17 +72,13 @@ public class ContentServer extends Client {
       /* PUT Header */
       String put = "PUT " + file + " HTTP/1.1\r\n";
 
-      /* Read file */
-      String msg = content_server.fileToString(file);
-
-      /* Prepend PUT header to msg body */
-      msg = put + msg;
+      content_server.json = content_server.makeJSONFromFile(file);
 
       /* Start Connection */
       content_server.startConnection(uri.getHost(), uri.getPort());
 
       /* Send/Recv */
-      content_server.sendMessage(msg);
+      content_server.sendMessage(put + content_server.json.toString());
 
       /* Handle Response */
       content_server.recvMessage();

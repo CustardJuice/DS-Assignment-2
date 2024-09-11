@@ -30,10 +30,12 @@ public class Client {
     /* Reads a message from the server line-by-line, until a null line is read */
   public void recvMessage() throws IOException {
     String line;
+    /* stop when line is a single . */
     while ((line = in.readLine()) != null) {
       /* print line */
      System.out.println(line);
     }
+    return;
   }
 
   /* Ends the connection with the server */

@@ -7,7 +7,7 @@ public class GETClient extends Client {
   public static void main(String[] args) {
     try {
       if (args.length < 1) {
-        System.err.println("Missing GETClient Arguments: Address and Port");
+        System.err.println("Missing GETClient Argument: URL");
         return;
       }
       /* Create new client object */
@@ -30,11 +30,15 @@ public class GETClient extends Client {
       /* Start Connection */
       client.startConnection(uri.getHost(), uri.getPort());
 
-      /* Send/Recv */
-      String rsp = client.sendMessage(msg);
+      /* Send Message */
+      client.sendMessage(msg);
 
       /* Handle Response */
-      System.out.println(rsp);
+      client.recvMessage();
+
+      /* Close Connection */
+      client.stopConnection(); 
+
     } catch (URISyntaxException e) {
       System.err.println("Error Parsing URI argument");
       e.printStackTrace();
