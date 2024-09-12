@@ -1,42 +1,56 @@
 # Defome the directories
 CLIENT_DIR = Client
 AGSERVER_DIR = AggregationServer
-COSERVER_DIR = ContentServer
 SRC_DIR = src
 BIN_DIR = bin
+LIB_DIR = lib
+
+# Dependencies, etc
+CLASSPATH = -cp ./bin:./lib/junit-platform-console-standalone-1.11.0.jar:./lib/json-simple-1.1.1.jar 
+DUMP = -d ./bin
+FLAGS = $(CLASSPATH) $(DUMP)
 
 # Define the class names
 AGSERVER_CLASS = AggregationServer
 COSERVER_CLASS = ContentServer
-CLIENT_CLASS = GETClient
+GETCLIENT_CLASS = GETClient
+CLIENT_CLASS = Client
 
 # Define the Java files
 AGSERVER_JAVA = $(SRC_DIR)/$(AGSERVER_DIR)/$(AGSERVER_CLASS).java
-COSERVER_JAVA = $(SRC_DIR)/$(COSERVER_DIR)/$(COSERVER_CLASS).java
+COSERVER_JAVA = $(SRC_DIR)/$(CLIENT_DIR)/$(COSERVER_CLASS).java
+GETCLIENT_JAVA = $(SRC_DIR)/$(CLIENT_DIR)/$(GETCLIENT_CLASS).java
 CLIENT_JAVA = $(SRC_DIR)/$(CLIENT_DIR)/$(CLIENT_CLASS).java
+
+# Args
+PORT = 4567
+URI = http://127.0.0.1:$(PORT)
+CONTENTPATH = /home/zachie2212/DS-Assignment-2/$(SRC_DIR)/$(CLIENT_DIR)/TestData.txt
 
 # Default target
 all: run
 
 # Target to compile Java files
 compile:
-	javac -d ./bin $(AGSERVER_JAVA) $(COSERVER_JAVA) $(CLIENT_JAVA) 
+	javac $(FLAGS) $(AGSERVER_JAVA) $(CLIENT_JAVA) $(COSERVER_JAVA) $(GETCLIENT_JAVA) 
 
 # Target to run both server and client
 run: compile
-	@tmux new-session -d my_session 'make run_server'
-	@tmux split-window -h -t my_session 'make run_client'
+	@tmux new-session -d -s my_session 'make run_server'
+	@tmux split-window -h -t my_session 'make run_content'
 	@tmux attach -t my_session
 	
-# Run server
-run_server:
-	cd $(BIN_DIR) && java $(AGSERVER_DIR)/$(AGSERVER_CLASS)
+# Run aggregation server
+server:
+	java $(CLASSPATH) $(AGSERVER_DIR).$(AGSERVER_CLASS) $(PORT)
 
 # Run client
-run_client:
-	cd $(BIN_DIR) && java $(CLIENT_DIR)/$(CLIENT_CLASS)
+client:
+	java $(CLASSPATH) $(CLIENT_DIR).$(GETCLIENT_CLASS) $(URI)
 
-
+# Run content server
+content:
+	java $(CLASSPATH) $(CLIENT_DIR).$(COSERVER_CLASS) $(URI) $(CONTENTPATH)
 # Clean target to remove compiled .class files
 clean:
 	rm -f $(BIN_DIR)/*.class

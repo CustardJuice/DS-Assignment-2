@@ -5,16 +5,19 @@ import java.io.*;
 
 public class GETClient extends Client {
   public static void main(String[] args) {
+    if (args.length < 1) {
+      System.err.println("Missing GETClient Argument: URL");
+      return;
+    }
+
     try {
-      if (args.length < 1) {
-        System.err.println("Missing GETClient Argument: URL");
-        return;
-      }
       /* Create new client object */
       GETClient client = new GETClient();
 
       /* Read server address and port number from command line */
-      URI uri = new URI(args[0]);
+      URI uri;
+
+      uri = new URI(args[0]);
 
       /* Optional station ID */
       int stationID = -1;
@@ -23,7 +26,7 @@ public class GETClient extends Client {
       }
 
       /* Server file to access */
-      String file = "index.html";
+      String file = "index.json";
 
       /* GET Message */
       String msg = "GET /" + file + "\r\n";
@@ -37,16 +40,9 @@ public class GETClient extends Client {
       client.recvMessage();
 
       /* Close Connection */
-      client.stopConnection(); 
-
+      client.stopConnection();
     } catch (URISyntaxException e) {
-      System.err.println("Error Parsing URI argument");
-      e.printStackTrace();
-    } catch (UnknownHostException e) {
-      System.err.println("Error Starting Client Connection: UnknownHostException");
-      e.printStackTrace();
-    } catch (IOException e) {
-      System.err.println("Error Starting Client Connection: IOException");
+      System.err.println(e + ": could not parse URI");
       e.printStackTrace();
     }
   }
