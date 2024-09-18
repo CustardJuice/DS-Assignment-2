@@ -96,8 +96,7 @@ public class ContentServer extends Client {
       /* Number of bytes in body */
       String length = Integer.toString(body.length() * 2);
 
-      /* Hard coded name for now */
-      String file_id = (String) content_server.json.get("id") + ".json";
+      String file_id = (String) content_server.json.get("id");
 
       /* PUT Header */
       String headers = "PUT /" + file_id + " HTTP/1.1\r\n";

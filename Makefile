@@ -28,17 +28,11 @@ URI = http://127.0.0.1:$(PORT)
 CONTENTPATH = /home/zachie2212/DS-Assignment-2/$(SRC_DIR)/$(CLIENT_DIR)/TestData.txt
 
 # Default target
-all: run
+all: compile
 
 # Target to compile Java files
 compile:
 	javac $(FLAGS) $(AGSERVER_JAVA) $(CLIENT_JAVA) $(COSERVER_JAVA) $(GETCLIENT_JAVA) 
-
-# Target to run both server and client
-run: compile
-	@tmux new-session -d -s my_session 'make run_server'
-	@tmux split-window -h -t my_session 'make run_content'
-	@tmux attach -t my_session
 	
 # Run aggregation server
 server:
