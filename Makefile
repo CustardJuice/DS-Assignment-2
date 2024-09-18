@@ -26,6 +26,7 @@ CLIENT_JAVA = $(SRC_DIR)/$(CLIENT_DIR)/$(CLIENT_CLASS).java
 PORT = 4567
 URI = http://127.0.0.1:$(PORT)
 CONTENTPATH = /home/zachie2212/DS-Assignment-2/$(SRC_DIR)/$(CLIENT_DIR)/TestData.txt
+ID = 
 
 # Default target
 all: compile
@@ -40,7 +41,7 @@ server:
 
 # Run client
 client:
-	java $(CLASSPATH) $(CLIENT_DIR).$(GETCLIENT_CLASS) $(URI)
+	java $(CLASSPATH) $(CLIENT_DIR).$(GETCLIENT_CLASS) $(URI) $(ID)
 
 # Run content server
 content:

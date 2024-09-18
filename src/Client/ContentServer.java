@@ -91,10 +91,10 @@ public class ContentServer extends Client {
     headers += "\r\n";
 
     /* Send/Recv */
-    sendMessage(headers + body);
+    send(headers + body);
 
     /* Handle Response */
-    recvMessage();
+    recv();
 
     /* End Connection */
     stopConnection();

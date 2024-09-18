@@ -30,12 +30,12 @@ public class Client {
    * Parameters:
    * msg, the message to send
    */
-  public void sendMessage(String msg) {
+  public void send(String msg) {
     out.println(msg);
   }
 
   /* Reads a message from the server line-by-line, until a null line is read */
-  public void recvMessage() {
+  public void recv() {
     String line;
     /* stop when line is a single . */
     try {

@@ -4,6 +4,25 @@ import java.net.*;
 import java.io.*;
 
 public class GETClient extends Client {
+  public void run(String id) {
+    /* PUT Header */
+    String msg;
+    if (id.length() == 0) {
+      msg = "GET /aggregation.json HTTP/1.1\r\n";
+    } else {
+      msg = "GET /aggregation.json?id=" + id + " HTTP/1.1\r\n";
+    }
+
+    /* Send/Recv */
+    send(msg);
+
+    /* Handle Response */
+    recv();
+
+    /* End Connection */
+    stopConnection();
+  }
+
   public static void main(String[] args) {
     if (args.length < 1) {
       System.err.println("Missing GETClient Argument: URL");
@@ -15,32 +34,18 @@ public class GETClient extends Client {
       GETClient client = new GETClient();
 
       /* Read server address and port number from command line */
-      URI uri;
-
-      uri = new URI(args[0]);
+      URI uri = new URI(args[0]);
 
       /* Optional station ID */
-      int stationID = -1;
+      String stationID = "";
       if (args.length > 1) {
-        stationID = Integer.parseInt(args[2]);
+        stationID = args[1];
       }
 
-      /* Server file to access */
-      String file = "index.json";
-
-      /* GET Message */
-      String msg = "GET /" + file + "\r\n";
       /* Start Connection */
       client.startConnection(uri.getHost(), uri.getPort());
 
-      /* Send Message */
-      client.sendMessage(msg);
-
-      /* Handle Response */
-      client.recvMessage();
-
-      /* Close Connection */
-      client.stopConnection();
+      client.run(stationID);
     } catch (URISyntaxException e) {
       System.err.println(e + ": could not parse URI");
       e.printStackTrace();

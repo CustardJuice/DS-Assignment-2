@@ -45,6 +45,15 @@ public class AggregationServer {
       parser = new JSONParser();
     }
 
+    /*
+     * Sends a message to the connected client with newline
+     * Parameters:
+     * msg, the message to send
+     */
+    public void send(String msg) {
+      out.println(msg + "\r\n");
+    }
+
     @SuppressWarnings("unchecked")
     private void handlePUT() {
 
@@ -70,7 +79,7 @@ public class AggregationServer {
         json_content = (JSONObject) parser.parse(json_body);
         if (json_content.isEmpty()) {
           logger("No Content, sending HTTP 204");
-          out.println("HTTP/1.1 204 No Content\r\n");
+          send("HTTP/1.1 204 No Content");
           return;
         }
 
@@ -104,25 +113,96 @@ public class AggregationServer {
 
         if (new_content) {
           logger("new content Created, sending HTTP 201");
-          out.println("HTTP/1.1 201 Created\r\n");
+          send("HTTP/1.1 201 Created");
           return;
         }
         logger("content modified OK, sending HTTP 200");
-        out.println("HTTP/1.1 200 OK\r\n");
+        send("HTTP/1.1 200 OK");
 
       } catch (IOException e) {
-        out.println("HTTP/1.1 500 Internal Server Error\r\n");
+        send("HTTP/1.1 500 Internal Server Error");
         logger(e + ": Error handling PUT request");
         e.printStackTrace();
       } catch (ParseException e) {
-        out.println("HTTP/1.1 500 Internal Server Error\r\n");
+        send("HTTP/1.1 500 Internal Server Error");
         logger(e + ": Could not parse JSON data");
         e.printStackTrace();
       }
     }
 
-    private void handleGET() {
+    private void handleGET(String target) {
+      JSONObject json_aggregation;
+      String file;
+      String id = "";
 
+      /* check if client requested specific stationID */
+      int idx = target.indexOf('?');
+      if (idx == -1) {
+        file = target;
+      } else {
+        file = target.substring(0, idx);
+        /*
+         * Server assumes that the client is making a query for a specific stationID, so
+         * it only checks the value of the query, not the key (assumes format key=value)
+         */
+        int idx2 = target.indexOf('=');
+        if (idx2 == -1) {
+          logger("invalid GET query format");
+          send("HTTP/1.1 404 Not Found");
+          send("error: could not understand query");
+          return;
+        }
+        id = target.substring(idx2 + 1);
+      }
+
+      /*
+       * turn aggregation.json into an aggregation object
+       * 
+       * NOTE: this might be inefficient for large file size. Can change to edit the
+       * file directly.
+       */
+      File f = new File(file);
+      if (!file.equals("aggregation.json") || !f.exists() || f.length() == 0) {
+        logger(file + " not found or empty");
+        send("HTTP/1.1 404 Not Found");
+        send("error: " + file + " not found in server directory");
+        return;
+      }
+
+      try {
+        /* TODO: MAKE THREAD SAFE */
+        json_aggregation = (JSONObject) parser.parse(new FileReader(file));
+
+        /* if id was specified in query */
+        if (id.length() > 0) {
+          /* if content id exists return return HTTP OK <relevant-data> */
+          if (json_aggregation.containsKey(id)) {
+            JSONObject json_content = (JSONObject) json_aggregation.get(id);
+            logger("sending content from station with id=" + id);
+            send("HTTP/1.1 200 OK");
+            send(json_content.toJSONString());
+          } else {
+            logger("server does not have data for id=" + id);
+            send("HTTP/1.1 404 Not Found");
+            send("error: found " + file + " but " + id + " not found");
+          }
+        }
+        /* else return HTTP OK <all-data> */
+        else {
+          logger("no id queried sending all content");
+          send("HTTP/1.1 200 OK");
+          send(json_aggregation.toJSONString());
+        }
+
+      } catch (IOException e) {
+        send("HTTP/1.1 500 Internal Server Error");
+        logger(e + ": Error handling PUT request");
+        e.printStackTrace();
+      } catch (ParseException e) {
+        send("HTTP/1.1 500 Internal Server Error");
+        logger(e + ": Could not parse JSON data");
+        e.printStackTrace();
+      }
     }
 
     private void closeConnection() {
@@ -153,17 +233,17 @@ public class AggregationServer {
         /* Recieve message header */
         String input_line = in.readLine();
 
-        // int idx = input_line.indexOf("/");
-        // String id = input_line.substring(idx + 1, input_line.indexOf(" ", idx));
-
         if (input_line.startsWith("PUT")) {
           logger("PUT request detected");
           handlePUT();
         } else if (input_line.startsWith("GET")) {
           logger("GET request detected");
-          handleGET();
+
+          int idx = input_line.indexOf("/");
+          String file = input_line.substring(idx + 1, input_line.indexOf(" ", idx));
+          handleGET(file);
         } else {
-          out.println("HTTP/1.1 400 Bad Request\r\n");
+          send("HTTP/1.1 400 Bad Request");
           System.err.println("Message was not GET or PUT");
         }
 
