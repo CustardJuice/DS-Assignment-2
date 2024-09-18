@@ -69,6 +69,7 @@ public class AggregationServer {
         /* create/edit json object and save to a file */
         json_content = (JSONObject) parser.parse(json_body);
         if (json_content.isEmpty()) {
+          logger("No Content, sending HTTP 204");
           out.println("HTTP/1.1 204 No Content\r\n");
           return;
         }
@@ -83,6 +84,7 @@ public class AggregationServer {
          */
         File f = new File("aggregation.json");
         if (f.length() > 0) {
+          /* TODO: MAKE THREAD SAFE */
           json_aggregation = (JSONObject) parser.parse(new FileReader("aggregation.json"));
         }
 
@@ -90,27 +92,31 @@ public class AggregationServer {
         new_content = !json_aggregation.containsKey(id);
 
         /* override/add data for this id */
+        /* TODO: MAKE THREAD SAFE */
         json_aggregation.put(id, json_content);
 
-        /* is this server crash or thread safe? */
+        /* is this server crash safe? */
+        /* TODO: MAKE THREAD SAFE */
         FileWriter file = new FileWriter("aggregation.json");
         file.write(json_aggregation.toJSONString());
         file.flush();
         file.close();
 
         if (new_content) {
+          logger("new content Created, sending HTTP 201");
           out.println("HTTP/1.1 201 Created\r\n");
           return;
         }
+        logger("content modified OK, sending HTTP 200");
         out.println("HTTP/1.1 200 OK\r\n");
 
       } catch (IOException e) {
         out.println("HTTP/1.1 500 Internal Server Error\r\n");
-        System.err.println(e + ": Error handling PUT request");
+        logger(e + ": Error handling PUT request");
         e.printStackTrace();
       } catch (ParseException e) {
         out.println("HTTP/1.1 500 Internal Server Error\r\n");
-        System.err.println(e + ": Could not parse JSON data");
+        logger(e + ": Could not parse JSON data");
         e.printStackTrace();
       }
     }
@@ -126,9 +132,13 @@ public class AggregationServer {
         out.close();
         client_socket.close();
       } catch (IOException e) {
-        System.err.println(e + ": Could not close connection");
+        logger(e + ": Could not close connection");
         e.printStackTrace();
       }
+    }
+
+    private void logger(String msg) {
+      System.out.println(currentThread().getName() + " Log: " + msg);
     }
 
     public void run() {
@@ -138,6 +148,8 @@ public class AggregationServer {
         in = new BufferedReader(
             new InputStreamReader(client_socket.getInputStream()));
 
+        logger("new client connection made");
+
         /* Recieve message header */
         String input_line = in.readLine();
 
@@ -145,8 +157,10 @@ public class AggregationServer {
         // String id = input_line.substring(idx + 1, input_line.indexOf(" ", idx));
 
         if (input_line.startsWith("PUT")) {
+          logger("PUT request detected");
           handlePUT();
         } else if (input_line.startsWith("GET")) {
+          logger("GET request detected");
           handleGET();
         } else {
           out.println("HTTP/1.1 400 Bad Request\r\n");
@@ -154,9 +168,10 @@ public class AggregationServer {
         }
 
         closeConnection();
+        logger("connection closed");
 
       } catch (IOException e) {
-        System.err.println("Server Client Handler Error");
+        logger("Server Client Handler Error");
         e.printStackTrace();
       }
     }

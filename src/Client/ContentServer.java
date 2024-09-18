@@ -71,51 +71,56 @@ public class ContentServer extends Client {
     return true;
   }
 
+  public void run(String file) {
+    if (!makeJSONFromFile(file)) {
+      return;
+    }
+
+    String type = "application/json";
+    String body = json.toJSONString();
+    /* Number of bytes in body */
+    String length = Integer.toString(body.length() * 2);
+
+    String file_id = (String) json.get("id");
+
+    /* PUT Header */
+    String headers = "PUT /" + file_id + " HTTP/1.1\r\n";
+    headers += "User-Agent: ATOMClient/1/0\r\n";
+    headers += "Content-Type: " + type + "\r\n";
+    headers += "Content-Length: " + length + "\r\n";
+    headers += "\r\n";
+
+    /* Send/Recv */
+    sendMessage(headers + body);
+
+    /* Handle Response */
+    recvMessage();
+
+    /* End Connection */
+    stopConnection();
+  }
+
   public static void main(String[] args) {
     if (args.length < 2) {
       System.err.println("Missing ContentServer Arguments: URL/File");
       return;
     }
 
-    try {
-      /* Create new ContentServer object */
-      ContentServer content_server = new ContentServer();
+    /* Create new ContentServer object */
+    ContentServer content_server = new ContentServer();
 
+    try {
       /* Read server address and port number from command line */
       URI uri = new URI(args[0]);
 
       /* Local file to access */
       String file = args[1];
 
-      if (!content_server.makeJSONFromFile(file)) {
-        return;
-      }
-
-      String type = "application/json";
-      String body = content_server.json.toJSONString();
-      /* Number of bytes in body */
-      String length = Integer.toString(body.length() * 2);
-
-      String file_id = (String) content_server.json.get("id");
-
-      /* PUT Header */
-      String headers = "PUT /" + file_id + " HTTP/1.1\r\n";
-      headers += "User-Agent: ATOMClient/1/0\r\n";
-      headers += "Content-Type: " + type + "\r\n";
-      headers += "Content-Length: " + length + "\r\n";
-      headers += "\r\n";
-
       /* Start Connection */
       content_server.startConnection(uri.getHost(), uri.getPort());
 
-      /* Send/Recv */
-      content_server.sendMessage(headers + body);
+      content_server.run(file);
 
-      /* Handle Response */
-      content_server.recvMessage();
-
-      /* End Connection */
-      content_server.stopConnection();
     } catch (URISyntaxException e) {
       System.err.println(e + ": could not parse URI");
       e.printStackTrace();
