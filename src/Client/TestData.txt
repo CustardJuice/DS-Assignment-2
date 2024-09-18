@@ -1,6 +1,6 @@
-id:IDS60901
-name:Adelaide (West Terrace / ngayirdapira)
-state: SA
+id:2
+name:Melbourne
+state:VIC
 time_zone:CST
 lat:-34.9
 lon:138.6

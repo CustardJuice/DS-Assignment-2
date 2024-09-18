@@ -37,7 +37,6 @@ public class Client {
   /* Reads a message from the server line-by-line, until a null line is read */
   public void recv() {
     String line;
-    /* stop when line is a single . */
     try {
       while ((line = in.readLine()) != null) {
         /* print line */
