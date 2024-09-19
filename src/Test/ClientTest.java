@@ -1,38 +1,39 @@
 package Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.UnknownHostException;
-
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+
+import AggregationServer.AggregationServer;
+
+import java.io.ByteArrayOutputStream;
 
 import Client.GETClient;
 
 public class ClientTest {
-  @Test
-  public void SimpleServerEcho1() throws UnknownHostException, IOException {
-    GETClient client1 = new GETClient();
-    client1.startConnection("127.0.0.1", 6666);
-    String msg1 = client1.sendMessage("hello");
-    String msg2 = client1.sendMessage("world");
-    String terminate = client1.sendMessage(".");
+  private final PrintStream standardOut = System.out;
+  private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
 
-    assertEquals(msg1, "hello");
-    assertEquals(msg2, "world");
-    assertEquals(terminate, "bye");
+  @Before
+  public void setUp() {
+    System.setOut(new PrintStream(outputStreamCaptor));
+  }
+
+  @After
+  public void tearDown() {
+    System.setOut(standardOut);
   }
 
   @Test
-  public void SimpleServerEcho2() throws UnknownHostException, IOException {
-    GETClient client2 = new GETClient();
-    client2.startConnection("127.0.0.1", 6666);
-    String msg1 = client2.sendMessage("hello");
-    String msg2 = client2.sendMessage("world");
-    String terminate = client2.sendMessage(".");
+  public void GETClientConnectsNoID() {
+    GETClient client = new GETClient();
+    String url = "http://127.0.0.1:4567";
+    String response = client.run(url);
 
-    assertEquals(msg1, "hello");
-    assertEquals(msg2, "world");
-    assertEquals(terminate, "bye");
+    // Assert.assertEquals("", outputStreamCaptor.toString().trim());
   }
 }

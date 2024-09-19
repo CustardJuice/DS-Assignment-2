@@ -130,6 +130,7 @@ public class AggregationServer {
       }
     }
 
+    @SuppressWarnings("unchecked")
     private void handleGET(String target) {
       JSONObject json_aggregation;
       String file;
@@ -177,7 +178,8 @@ public class AggregationServer {
         if (id.length() > 0) {
           /* if content id exists return return HTTP OK <relevant-data> */
           if (json_aggregation.containsKey(id)) {
-            JSONObject json_content = (JSONObject) json_aggregation.get(id);
+            JSONObject json_content = new JSONObject();
+            json_content.put(id, json_aggregation.get(id));
             logger("sending content from station with id=" + id);
             send("HTTP/1.1 200 OK");
             send(json_content.toJSONString());

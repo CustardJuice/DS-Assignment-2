@@ -35,18 +35,24 @@ public class Client {
   }
 
   /* Reads a message from the server line-by-line, until a null line is read */
-  public void recv() {
+  public String recv() {
+    String response = "";
     String line;
     try {
       while ((line = in.readLine()) != null) {
         /* print line */
-        System.out.println(line);
+        response += line + "\n";
       }
     } catch (IOException e) {
       System.err.println(e + ": Could not receive message");
       e.printStackTrace();
     }
-    return;
+    return response;
+  }
+
+  /* Prints message to std out, generally used for printing recv() */
+  public void print(String s) {
+    System.out.println(s);
   }
 
   /* Ends the connection with the server */
